@@ -93,6 +93,10 @@ Kết quả: Nhờ AI, tôi đã biết cách dùng cờ -u root trong lệnh do
 <img width="1053" height="71" alt="image" src="https://github.com/user-attachments/assets/aa0dab56-e022-4c57-80e5-932e7eb019d7" />
 
 
+
+<img width="1257" height="617" alt="image" src="https://github.com/user-attachments/assets/a0c9f4c2-e6fa-4413-bb74-b3369c598103" />
+
+
 ## Video Demo
 **[Click vào đây để xem Video Demo Hệ thống Brute-Force Defender] https://docs.google.com/videos/d/16h24zvL3RcVapeHyRRKZB_j-Smf_H2CvwfsqIerkcCg/edit?usp=sharing**
 
