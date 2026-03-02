@@ -1,0 +1,177 @@
+{
+  "name": "Giám sát",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2a46d1c3-7c00-4eed-8254-162f5eb4e1a2",
+      "name": "Telegram Trigger",
+      "webhookId": "7c182ab3-149b-4263-9f62-d778f928cd11",
+      "credentials": {
+        "telegramApi": {
+          "id": "Yz1CeuunH8rZd2rC",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "61c64806-8bfd-425d-96ad-818e9a4dc1da",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/healthy",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "db4d7427-f273-4c5d-8e5e-5f7a5475af0b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8080",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "0a469cdc-e306-4687-918d-c22ef702bd3b",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput",
+      "notes": "200 ,403"
+    },
+    {
+      "parameters": {
+        "chatId": "DIEN_ID",
+        "text": "🟢: [HEALTHY] Trạng thái OK! Hệ thống Nginx đang chạy mượt mà",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        -96
+      ],
+      "id": "fea6182b-cc7f-4faf-bbd6-ad2c38bea627",
+      "name": "Send a text message1",
+      "webhookId": "e186089e-c508-4f54-9e35-f6e7c93413f0",
+      "credentials": {
+        "telegramApi": {
+          "id": "Yz1CeuunH8rZd2rC",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "DIEN_ID",
+        "text": "🔴: [BÁO ĐỘNG KHẨN] Nginx không phản hồi (Mất kết nối)!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        64
+      ],
+      "id": "dca2a3d5-4163-4b83-8c73-2a8cf8a6d818",
+      "name": "Send a text message2",
+      "webhookId": "5337cd85-c317-4b79-ac99-4866ffa43402",
+      "credentials": {
+        "telegramApi": {
+          "id": "Yz1CeuunH8rZd2rC",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "37765a8f-e28d-4e48-9490-806055854637",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "db53d8f557f582dc8b95500013729d647d245cf05d40007e7fefb9bc991470bf"
+  },
+  "id": "w6HCpKl8IppJB4NK",
+  "tags": []
+}

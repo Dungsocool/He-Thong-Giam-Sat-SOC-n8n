@@ -1,0 +1,70 @@
+{
+  "name": "Báo động khẩn cấp",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Canh-Bao-Attack",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "58d66025-86b5-43df-a562-1a5327190f5e",
+      "name": "Webhook",
+      "webhookId": "6d293d70-ad47-4895-bdc4-434e46461666"
+    },
+    {
+      "parameters": {
+        "chatId": "DIEN_ID",
+        "text": "🚨 [BÁO ĐỘNG KHẨN] Hệ thống Brute-force vừa phát hiện tấn công và đã CHẶN THÀNH CÔNG một IP độc hại!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "69be14a2-ed34-4935-978f-d715e2431b5b",
+      "name": "Send a text message",
+      "webhookId": "6aa9b04b-82ee-4032-a56f-ffd0c02c22d3",
+      "credentials": {
+        "telegramApi": {
+          "id": "Yz1CeuunH8rZd2rC",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "32ae2a57-a66f-45ee-8b6a-07ede0b7a3e5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "db53d8f557f582dc8b95500013729d647d245cf05d40007e7fefb9bc991470bf"
+  },
+  "id": "4YzqI9Uw1ORMZbTe",
+  "tags": []
+}
