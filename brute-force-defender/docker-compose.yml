@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  nginx-server:
+    build: 
+      context: ./nginx-server
+      network: host
+    container_name: demo_nginx_server
+    ports:
+      - "8080:80"
+    volumes:
+      - ./shared_logs:/var/log/nginx
+      - ./shared_config/block_ips.conf:/etc/nginx/block_ips.conf
+    restart: always
+
+  security-watcher:
+    build: 
+      context: ./security-watcher
+      network: host
+    container_name: demo_security_watcher
+    # Dung host network de goi duoc Telegram API tu ben trong container
+    network_mode: "host"
+    env_file:
+      - .env
+    volumes:
+      - ./shared_logs:/var/log/nginx:ro
+      - ./shared_config/block_ips.conf:/etc/nginx/block_ips.conf:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - nginx-server
+
+  attacker-bot:
+    build:
+      context: ./attacker-bot
+      network: host
+    container_name: demo_attacker_bot
+    # Bot dung host network thi goi vao localhost:8080 (port cua host)
+    network_mode: "host"
+    depends_on:
+      - nginx-server
