@@ -3,6 +3,44 @@
   "nodes": [
     {
       "parameters": {
+        "httpMethod": "POST",
+        "path": "Canh-Bao-Attack",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "83e15bd6-0e1f-45af-a132-d6e420147700",
+      "name": "Webhook",
+      "webhookId": "6d293d70-ad47-4895-bdc4-434e46461666"
+    },
+    {
+      "parameters": {
+        "chatId": "7905655986",
+        "text": "Cảnh báo hành động tấn công",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "78781fe1-6a9c-44ca-9feb-adaf54d46026",
+      "name": "Send a text message",
+      "webhookId": "6aa9b04b-82ee-4032-a56f-ffd0c02c22d3",
+      "credentials": {
+        "telegramApi": {
+          "id": "1v5IIkYHAJr8m55T",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
         "updates": [
           "message"
         ],
@@ -11,16 +49,16 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        0,
-        0
+        -432,
+        384
       ],
-      "id": "2a46d1c3-7c00-4eed-8254-162f5eb4e1a2",
+      "id": "5943342b-46ce-4d8f-9d86-1b153b01d42b",
       "name": "Telegram Trigger",
       "webhookId": "7c182ab3-149b-4263-9f62-d778f928cd11",
       "credentials": {
         "telegramApi": {
-          "id": "Yz1CeuunH8rZd2rC",
-          "name": "Telegram account 2"
+          "id": "1v5IIkYHAJr8m55T",
+          "name": "Telegram account"
         }
       }
     },
@@ -51,10 +89,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        208,
-        0
+        -224,
+        384
       ],
-      "id": "db4d7427-f273-4c5d-8e5e-5f7a5475af0b",
+      "id": "3113cd9d-0244-4862-b4ce-e48f4685c995",
       "name": "If"
     },
     {
@@ -65,61 +103,72 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        448,
-        -16
+        16,
+        368
       ],
-      "id": "0a469cdc-e306-4687-918d-c22ef702bd3b",
+      "id": "316ff604-b8b2-4988-9221-004f7a64c7e4",
       "name": "HTTP Request",
       "onError": "continueErrorOutput",
       "notes": "200 ,403"
     },
     {
       "parameters": {
-        "chatId": "DIEN_ID",
+        "chatId": "7905655986",
         "text": "🟢: [HEALTHY] Trạng thái OK! Hệ thống Nginx đang chạy mượt mà",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        720,
-        -96
+        288,
+        288
       ],
-      "id": "fea6182b-cc7f-4faf-bbd6-ad2c38bea627",
+      "id": "bff7ff85-11f7-48df-acb4-b4c768777b58",
       "name": "Send a text message1",
       "webhookId": "e186089e-c508-4f54-9e35-f6e7c93413f0",
       "credentials": {
         "telegramApi": {
-          "id": "Yz1CeuunH8rZd2rC",
-          "name": "Telegram account 2"
+          "id": "1v5IIkYHAJr8m55T",
+          "name": "Telegram account"
         }
       }
     },
     {
       "parameters": {
-        "chatId": "DIEN_ID",
+        "chatId": "7905655986",
         "text": "🔴: [BÁO ĐỘNG KHẨN] Nginx không phản hồi (Mất kết nối)!",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        688,
-        64
+        256,
+        448
       ],
-      "id": "dca2a3d5-4163-4b83-8c73-2a8cf8a6d818",
+      "id": "c67833df-579a-40fd-b437-cf5780ce03f1",
       "name": "Send a text message2",
       "webhookId": "5337cd85-c317-4b79-ac99-4866ffa43402",
       "credentials": {
         "telegramApi": {
-          "id": "Yz1CeuunH8rZd2rC",
-          "name": "Telegram account 2"
+          "id": "1v5IIkYHAJr8m55T",
+          "name": "Telegram account"
         }
       }
     }
   ],
   "pinData": {},
   "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Telegram Trigger": {
       "main": [
         [
@@ -167,11 +216,11 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "37765a8f-e28d-4e48-9490-806055854637",
+  "versionId": "aa1662c3-d874-4831-a2a6-eb1174e06aa8",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "db53d8f557f582dc8b95500013729d647d245cf05d40007e7fefb9bc991470bf"
+    "instanceId": "5b9509091b346f0e6a2042b78a904061f5b7cb5d54e6bb7a7e9d13477cf9793e"
   },
-  "id": "w6HCpKl8IppJB4NK",
+  "id": "m0YQdwz8jn17Icu8",
   "tags": []
 }
