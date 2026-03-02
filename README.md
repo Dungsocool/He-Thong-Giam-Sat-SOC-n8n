@@ -44,7 +44,18 @@ He-Thong-Giam-Sat-SOC-n8n/
 ### 🚀 Hướng dẫn Cài đặt & Sử dụng (n8n)
 
 ```bash
+1) Cập nhật hệ thống và cài đặt Git, Curl
+sudo apt-get update && sudo apt-get install -y git curl
 
+2) Cài đặt Docker & Docker Compose tự động bằng Official Script
+curl -fsSL [https://get.docker.com](https://get.docker.com) | sudo sh
+
+3) Phân quyền để chạy Docker không cần gõ sudo liên tục
+sudo usermod -aG docker $USER
+newgrp docker
+4) Tải toàn bộ mã nguồn hệ thống về máy
+git clone [https://github.com/Dungsocool/He-Thong-Giam-Sat-SOC-n8n.git](https://github.com/Dungsocool/He-Thong-Giam-Sat-SOC-n8n.git)
+cd He-Thong-Giam-Sat-SOC-n8n/
 1)Mở Terminal của máy ảo và chạy lệnh sau để tải & khởi động máy chủ n8n (chạy ngầm):
 
 sudo docker run -d --restart unless-stopped --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
