@@ -2,6 +2,10 @@
 
 Một hệ thống lab giả lập bằng Docker chuyên dụng, biến **Telegram thành Trung tâm Điều hành An ninh mạng (SOC)**. Hệ thống kết hợp giữa phòng thủ chủ động bằng Python và tự động hóa cảnh báo bằng n8n, giúp quản trị viên giám sát Uptime trực tiếp từ điện thoại từ đó chặn đứng các cuộc tấn công Brute-Force .
 
+# 🛡️ Video
+
+https://drive.google.com/file/d/1AKJ5XQbnb54aVJU6TYBKPSRw9uGVZF_D/view?usp=sharing
+
 ## 💡 Giới thiệu Hệ Sinh Thái
 
 Hệ thống được nâng cấp toàn diện với 2 luồng hoạt động chính, bổ trợ chặt chẽ cho nhau:
