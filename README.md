@@ -103,12 +103,32 @@ Gạt công tắc ở góc phải trên cùng của màn hình n8n sang trạng 
 Mở Node Webhook (trong luồng báo động), click đúp vào nó, chuyển sang tab Production URL.
 
 ```
+## 📸 Hình ảnh Demo
 <img width="1919" height="817" alt="image" src="https://github.com/user-attachments/assets/a2b96f34-dce8-451f-b404-dc3411669e44" />
 <img width="1625" height="228" alt="image" src="https://github.com/user-attachments/assets/b68dd3c2-1311-44c6-bca7-d26e84ab3978" />
 <img width="1844" height="987" alt="image" src="https://github.com/user-attachments/assets/bcf86de0-3f2e-4835-929a-2daf2568aeb4" />
 
+<img width="1915" height="1079" alt="image" src="https://github.com/user-attachments/assets/db28a2c0-3329-4c3e-9374-7ec2f017cde4" />
 
+# 🎯 Kiểm tra hoạt động của hệ thống (Testing)
 
+Sau khi hệ thống n8n đã lên sóng với đường link NPort xịn sò, giờ là lúc chúng ta "thử lửa" xem luồng cảnh báo có thực sự chạy mượt mà không nhé!
+**🚀 Bài Test 1: Bắn cảnh báo giả lập bằng cURL (Thực hành ngay)**
+curl -X POST https://soc-n8n-cua-ban.nport.link/webhook-test/canh-bao-attack
+🎉 BÙM! Ngay lập tức, điện thoại của bạn sẽ rung lên với tin nhắn cảnh báo màu đỏ chót. Nếu bạn nhận được tin nhắn, xin chúc mừng, hệ thống Core của bạn đã hoạt động hoàn hảo!
+
+**🚧 Bài Test 2: Gõ lệnh /healthy kiểm tra Nginx (Chờ Phần 2 để hoàn thiện)**
+Trong luồng giám sát (Monitor Workflow) bạn vừa import, có một tính năng rất ngầu: Hễ bạn mở Telegram gõ lệnh /healthy, n8n sẽ đi kiểm tra xem máy chủ Nginx có đang sống không.
+
+Thử ngay bây giờ bạn sẽ thấy gì?
+Vì ở Phần 1 này chúng ta chưa hề cài đặt Nginx, nên n8n sẽ không tìm thấy server. Nó sẽ lập tức rẽ sang nhánh Lỗi và bắn cho bạn một tin nhắn Màu Đỏ 🔴:
+🔴 BÁO ĐỘNG KHẨN Nginx không phản hồi (Mất kết nối)!
+
+👉 Đừng lo lắng, đây là một bài test THÀNH CÔNG! Nó chứng tỏ nhánh báo lỗi của n8n hoạt động cực kỳ nhạy bén.
+
+Làm sao để có tin nhắn Màu Xanh 🟢?
+Để hệ thống hoàn chỉnh và gõ /healthy trả về trạng thái bình thường (Server đang chạy tốt), chúng ta cần thiết lập Reverse Proxy.
+⏩ Hẹn gặp lại các bạn ở Phần 2: Cài đặt Nginx & Tối ưu luồng SOC nhé!
 ## 🛡️ PHẦN 2: HỆ THỐNG PHÒNG THỦ (Brute-Force Defender)
 
 ## 💡 Giới thiệu
