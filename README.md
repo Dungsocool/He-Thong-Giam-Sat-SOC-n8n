@@ -65,7 +65,7 @@ sudo docker run -d --restart unless-stopped --name n8n -p 5678:5678 -e N8N_SECUR
 
 
 Gõ đường dẫn sau vào thanh địa chỉ: http://<IP_MÁY_ẢO_CỦA_BẠN>:5678
-(Ví dụ nếu chạy local: http://localhost:5678 hoặc http://192.168.14.128:5678).
+(Ví dụ http://192.168.14.128:5678).
 
 
 8) Import "Bản thiết kế" (File JSON)
@@ -84,7 +84,7 @@ Click đúp vào các cục Node có tên Telegram.
 
 Credential: Tạo mới kết nối và dán mã TELEGRAM_TOKEN của con Bot bạn đang quản lý vào.
 
-Chat ID: Xóa dòng chữ DIEN_CHAT_ID_CUA_SEP_VAO_DAY và điền dãy số ID Telegram thật của bạn vào. ➡️ Bấm Save.
+Chat ID: Xóa dòng chữ DIEN_CHAT_ID và điền dãy số ID Telegram thật của bạn vào. ➡️ Bấm Save.
 
 10) Kích hoạt & Lấy link Webhook
 
