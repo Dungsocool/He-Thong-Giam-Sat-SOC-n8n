@@ -60,7 +60,7 @@ git clone https://github.com/Dungsocool/He-Thong-Giam-Sat-SOC-n8n
 
 6)Mở Terminal của máy ảo và chạy lệnh sau để tải & khởi động máy chủ n8n (chạy ngầm):
 
-sudo docker run -d --restart unless-stopped --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+sudo docker run -d --restart unless-stopped --name n8n -p 5678:5678 -e N8N_SECURE_COOKIE=false -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
 7) Đăng nhập vào giao diện Web n8n
 
 
