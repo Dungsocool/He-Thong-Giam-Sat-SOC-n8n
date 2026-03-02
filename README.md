@@ -42,21 +42,44 @@ He-Thong-Giam-Sat-SOC-n8n/
    - Ngay khi nhận được dữ liệu (POST request) báo cáo có IP bị khóa, n8n lập tức bắn tin nhắn 🚨 **BÁO ĐỘNG KHẨN** về Telegram.
 
 ### 🚀 Hướng dẫn Cài đặt & Sử dụng (n8n)
-Thay vì phải kéo thả xây dựng lại luồng từ đầu, bạn chỉ cần Import bản thiết kế JSON đã được đóng gói sẵn:
 
-**1. Import vào hệ thống n8n:**
-- Tải 2 file `.json` trong thư mục `n8n-monitoring` về máy tính.
-- Mở giao diện n8n của bạn, chọn Menu (góc trái trên) ➡️ **Import from File** và tải lên lần lượt 2 file đó.
+```bash
 
-**2. Cấu hình định danh (Bảo mật):**
-- Mở các Node `Telegram` (Send a text message) trong cả 2 luồng.
-- Xóa dòng chữ `DIEN_CHAT_ID_CUA_SEP_VAO_DAY` và điền dãy số ID Telegram thật của bạn vào ô **Chat ID**.
+1)Mở Terminal của máy ảo và chạy lệnh sau để tải & khởi động máy chủ n8n (chạy ngầm):
 
-**3. Kích hoạt & Lấy link Webhook:**
-- Gạt công tắc ở góc phải trên cùng sang **Active** cho cả 2 luồng.
-- Mở Node `Webhook` (trong luồng báo động), copy **Production URL** để chuẩn bị gắn vào cấu hình hệ thống phòng thủ ở Phần 2.
+sudo docker run -d --restart unless-stopped --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
+2) Đăng nhập vào giao diện Web n8n
 
----
+
+Gõ đường dẫn sau vào thanh địa chỉ: http://<IP_MÁY_ẢO_CỦA_BẠN>:5678
+(Ví dụ nếu chạy local: http://localhost:5678 hoặc http://192.168.14.128:5678).
+
+
+3) Import "Bản thiết kế" (File JSON)
+Thay vì phải kéo thả, tự vẽ lại luồng từ đầu, bạn chỉ cần nạp 2 cấu hình đã được làm sẵn:
+
+Tải 2 file .json nằm trong thư mục n8n-monitoring của kho GitHub này về máy tính.
+
+Trên giao diện web n8n, nhìn sang menu bên trái, chọn Workflows ➡️ Bấm Add Workflow.
+
+Nhìn lên góc trên cùng, bấm vào nút Menu (biểu tượng 3 dấu gạch ngang) ➡️ Chọn Import from File và tải lên lần lượt 2 file JSON đó.
+
+4) Cấu hình định danh Bot Telegram
+Để Bot biết phải gửi tin nhắn cho ai, bạn cần cấu hình lại 2 thông số sau trong các luồng vừa tải lên:
+
+Click đúp vào các cục Node có tên Telegram.
+
+Credential: Tạo mới kết nối và dán mã TELEGRAM_TOKEN của con Bot bạn đang quản lý vào.
+
+Chat ID: Xóa dòng chữ DIEN_CHAT_ID_CUA_SEP_VAO_DAY và điền dãy số ID Telegram thật của bạn vào. ➡️ Bấm Save.
+
+5) Kích hoạt & Lấy link Webhook
+
+Gạt công tắc ở góc phải trên cùng của màn hình n8n sang trạng thái Active (công tắc chuyển màu xanh lá) cho cả 2 luồng.
+
+Mở Node Webhook (trong luồng báo động), click đúp vào nó, chuyển sang tab Production URL.
+
+```
 
 ## 🛡️ PHẦN 2: HỆ THỐNG PHÒNG THỦ (Brute-Force Defender)
 
