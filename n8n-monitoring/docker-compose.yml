@@ -6,9 +6,9 @@ services:
     network_mode: host
     environment:
       - N8N_SECURE_COOKIE=false
+      - WEBHOOK_URL=https://soc-n8n-cua-ban.nport.link
     volumes:
       - n8n_data:/home/node/.n8n
-    command: start --tunnel
 
 volumes:
   n8n_data:
