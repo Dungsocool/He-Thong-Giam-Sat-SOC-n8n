@@ -1,11 +1,11 @@
 # 🛡️ Telegram SOC Command Center: Hệ Thống Giám Sát n8n & Phòng Thủ Brute-Force
 
-Một hệ thống lab giả lập bằng Docker chuyên dụng, biến **Telegram thành Trung tâm Điều hành An ninh mạng (SOC)**. Hệ thống kết hợp giữa phòng thủ chủ động bằng Python và tự động hóa cảnh báo bằng n8n, giúp quản trị viên giám sát Uptime từ đó chặn đứng các cuộc tấn công Brute-Force trực tiếp từ điện thoại.
+Một hệ thống lab giả lập bằng Docker chuyên dụng, biến **Telegram thành Trung tâm Điều hành An ninh mạng (SOC)**. Hệ thống kết hợp giữa phòng thủ chủ động bằng Python và tự động hóa cảnh báo bằng n8n, giúp quản trị viên giám sát Uptime trực tiếp từ điện thoại từ đó chặn đứng các cuộc tấn công Brute-Force .
 
 ## 💡 Giới thiệu Hệ Sinh Thái
 
 Hệ thống được nâng cấp toàn diện với 2 luồng hoạt động chính, bổ trợ chặt chẽ cho nhau:
-1. **🟢 Luồng Giám Sát Sức Khỏe (Uptime Monitoring bằng n8n):** Quản trị viên chủ động gõ lệnh `/healthy` trên Telegram. n8n sẽ đi "khám bệnh" server Nginx và báo cáo trạng thái (Sống/Chết) ngay lập tức.
+1. **🟢 Luồng Giám Sát Sức Khỏe (Uptime Monitoring bằng n8n):** Quản trị viên chủ động gõ lệnh `/healthy` trên Telegram. n8n sẽ đi "khám bệnh" server Nginx và báo cáo trạng thái (Sống/Chết) ngay lập tức. Khi thụ động nhận cảnh báo lập tức sẽ báo cho Quản trị viên .
 2. **🔴 Luồng Phòng Thủ & Báo Động (Security IDS/IPS):** Script Python (`watcher.py`) liên tục quét log Nginx. Khi phát hiện IP có dấu hiệu quét lỗi 403 vượt ngưỡng, nó tự động khóa IP ở tầng Nginx, đồng thời kích hoạt Webhook của n8n để bắn **còi báo động khẩn cấp** về Telegram.
 
 ## 📂 Cấu trúc dự án
@@ -30,7 +30,7 @@ He-Thong-Giam-Sat-SOC-n8n/
 ## 🤖 PHẦN 1: HỆ THỐNG GIÁM SÁT & CẢNH BÁO (n8n Monitoring)
 
 ### 💡 Giới thiệu
-Đây là "Bộ não" trung tâm của hệ thống, sử dụng nền tảng tự động hóa n8n để liên kết máy chủ với Telegram của Quản trị viên. Nó hoạt động với 2 nhiệm vụ song song: kiểm tra sức khỏe máy chủ chủ động và nhận báo động thụ động.
+Đây là "Bộ não" trung tâm của hệ thống, sử dụng nền tảng tự động hóa n8n để liên kết máy chủ với Telegram của Quản trị viên. Nó hoạt động với 2 nhiệm vụ song song: kiểm tra sức khỏe máy chủ chủ động và nhận báo động thụ động , lập tức báo cho Quản trị viên .
 
 ### ⚙️ Kiến trúc & Luồng hoạt động (Workflow)
 1. **Luồng Giám Sát (Active Health Check):**
@@ -46,60 +46,38 @@ He-Thong-Giam-Sat-SOC-n8n/
 ```bash
 1) Cập nhật hệ thống và cài đặt Git, Curl
 sudo apt-get update && sudo apt-get install -y git curl
-
 2) Cài đặt Docker & Docker Compose tự động bằng Official Script
 curl -fsSL https://get.docker.com | sudo sh
-
 3) Phân quyền để chạy Docker không cần gõ sudo liên tục
 sudo usermod -aG docker $USER
 newgrp docker
 4) Tải toàn bộ mã nguồn hệ thống về máy
 git clone https://github.com/Dungsocool/He-Thong-Giam-Sat-SOC-n8n
-
 5) cd He-Thong-Giam-Sat-SOC-n8n/n8n-monitoring
-
 6)curl -fsSL [https://deb.nodesource.com/setup_20.x](https://deb.nodesource.com/setup_20.x) | sudo -E bash -
 sudo apt-get install -y nodejs
-
 sudo npm install -g nport
-
 7) Mở 1 Terminal chạy song song
-
 sudo nport 5678 -s soc-n8n-cua-ban
 8)
-
-
 sudo docker compose up -d
-
-
-9) Sau bước 8 đăng nhập vào giao diện Web n8n
+9) Sau bước 7, 8 đăng nhập vào giao diện Web n8n
 (bạn có thể sửa tên đăng nhập trong /He-Thong-Giam-Sat-SOC-n8n/n8n-monitoring/docker-compose.yml )
-
 https://soc-n8n-cua-ban.nport.link
-
-
-9) Import "Bản thiết kế" (File JSON)
-Thay vì phải kéo thả, tự vẽ lại luồng từ đầu, bạn chỉ cần nạp 2 cấu hình đã được làm sẵn:
-
-Tải 2 file .json nằm trong thư mục n8n-monitoring của kho GitHub này về máy tính.
-
+10) Import "Bản thiết kế" (File JSON)
+Thay vì phải kéo thả, tự vẽ lại luồng từ đầu, bạn chỉ cần nạp cấu hình đã được làm sẵn:
+Tải .json nằm trong thư mục n8n-monitoring của kho GitHub này về máy tính.
 Trên giao diện web n8n, nhìn sang menu bên trái, chọn Workflows ➡️ Bấm Add Workflow.
+Nhìn lên góc trên cùng, bấm vào nút Menu (biểu tượng 3 dấu gạch ngang) ➡️ Chọn Import from File và tải lên lần lượt  file JSON đó.
 
-Nhìn lên góc trên cùng, bấm vào nút Menu (biểu tượng 3 dấu gạch ngang) ➡️ Chọn Import from File và tải lên lần lượt 2 file JSON đó.
-
-10) Cấu hình định danh Bot Telegram
+11) Cấu hình định danh Bot Telegram
 Để Bot biết phải gửi tin nhắn cho ai, bạn cần cấu hình lại 2 thông số sau trong các luồng vừa tải lên:
-
 Click đúp vào các cục Node có tên Telegram.
-
 Credential: Tạo mới kết nối và dán mã TELEGRAM_TOKEN của con Bot bạn đang quản lý vào.
-
 Chat ID: Xóa dòng chữ DIEN_CHAT_ID và điền dãy số ID Telegram thật của bạn vào. ➡️ Bấm Save.
 
-11) Kích hoạt & Lấy link Webhook
-
+12) Kích hoạt & Lấy link Webhook
 Gạt công tắc ở góc phải trên cùng của màn hình n8n sang trạng thái Active (công tắc chuyển màu xanh lá) cho cả 2 luồng.
-
 Mở Node Webhook (trong luồng báo động), click đúp vào nó, chuyển sang tab Production URL.
 
 ```
@@ -113,9 +91,16 @@ Mở Node Webhook (trong luồng báo động), click đúp vào nó, chuyển s
 # 🎯 Kiểm tra hoạt động của hệ thống (Testing)
 
 Sau khi hệ thống n8n đã lên sóng với đường link NPort xịn sò, giờ là lúc chúng ta "thử lửa" xem luồng cảnh báo có thực sự chạy mượt mà không nhé!
-**🚀 Bài Test 1: Bắn cảnh báo giả lập bằng cURL (Thực hành ngay)**
-curl -X POST https://soc-n8n-cua-ban.nport.link/webhook-test/canh-bao-attack
-🎉 BÙM! Ngay lập tức, điện thoại của bạn sẽ rung lên với tin nhắn cảnh báo màu đỏ chót. Nếu bạn nhận được tin nhắn, xin chúc mừng, hệ thống Core của bạn đã hoạt động hoàn hảo!
+
+
+**🚀 Bài Test 1: Bắn cảnh báo giả lập bằng curl** 
+curl -X POST <> 
+<img width="1912" height="924" alt="image" src="https://github.com/user-attachments/assets/7aa66c1f-bedf-43f6-86e2-7288c2854687" />
+Thay  <> bằng Production URL của bạn .
+🎉 Ngay lập tức, điện thoại của bạn sẽ rung lên với tin nhắn cảnh báo. Nếu bạn nhận được tin nhắn, xin chúc mừng, hệ thống Core của bạn đã hoạt động hoàn hảo!
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/41ebb722-37d0-41aa-808b-4e95d97be8f5" />
+
+
 
 **🚧 Bài Test 2: Gõ lệnh /healthy kiểm tra Nginx (Chờ Phần 2 để hoàn thiện)**
 Trong luồng giám sát (Monitor Workflow) bạn vừa import, có một tính năng rất ngầu: Hễ bạn mở Telegram gõ lệnh /healthy, n8n sẽ đi kiểm tra xem máy chủ Nginx có đang sống không.
@@ -123,9 +108,8 @@ Trong luồng giám sát (Monitor Workflow) bạn vừa import, có một tính 
 Thử ngay bây giờ bạn sẽ thấy gì?
 Vì ở Phần 1 này chúng ta chưa hề cài đặt Nginx, nên n8n sẽ không tìm thấy server. Nó sẽ lập tức rẽ sang nhánh Lỗi và bắn cho bạn một tin nhắn Màu Đỏ 🔴:
 🔴 BÁO ĐỘNG KHẨN Nginx không phản hồi (Mất kết nối)!
-
+<img width="887" height="886" alt="image" src="https://github.com/user-attachments/assets/72c16c28-cab0-4e96-b738-6a114f6c7a74" />
 👉 Đừng lo lắng, đây là một bài test THÀNH CÔNG! Nó chứng tỏ nhánh báo lỗi của n8n hoạt động cực kỳ nhạy bén.
-
 Làm sao để có tin nhắn Màu Xanh 🟢?
 Để hệ thống hoàn chỉnh và gõ /healthy trả về trạng thái bình thường (Server đang chạy tốt), chúng ta cần thiết lập Reverse Proxy.
 ⏩ Hẹn gặp lại các bạn ở Phần 2: Cài đặt Nginx & Tối ưu luồng SOC nhé!
@@ -173,25 +157,15 @@ phongthu/
 Để chạy được hệ thống, máy ảo của bạn cần có Git và Docker. Thay vì cài đặt thủ công phức tạp, hãy chạy lần lượt các lệnh tự động sau:
 
 ```bash
-# 1. Cập nhật hệ thống và cài đặt Git, Curl
-sudo apt-get update && sudo apt-get install -y git curl
 
-# 2. Cài đặt Docker & Docker Compose tự động bằng Official Script
-curl -fsSL https://get.docker.com | sudo sh
+1) cd  ~/He-Thong-Giam-Sat-SOC-n8n/brute-force-defender
 
-# 3. Phân quyền để chạy Docker không cần gõ sudo liên tục
-sudo usermod -aG docker $USER
-newgrp docker
+2) sudo nano .env  # (Ghi chú: Điền TELEGRAM_TOKEN và TELEGRAM_CHAT_ID của bạn vào đây)
 
-4) git clone https://github.com/Dungsocool/brute-force-defender.git
-1) cd brute-force-defender/
-
-) sudo nano .env  # (Ghi chú: Điền TELEGRAM_TOKEN và TELEGRAM_CHAT_ID của bạn vào đây)
-
-7) curl -s "https://api.telegram.org/bot<TOKEN_CUA_BAN>/sendMessage?chat_id=<ID_CUA_BAN>&text=Test_ket_noi_thanh_cong!"
+3) curl -s "https://api.telegram.org/bot<TOKEN_CUA_BAN>/sendMessage?chat_id=<ID_CUA_BAN>&text=Test_ket_noi_thanh_cong!"
         ( "Ping" thử Telegram    {"ok":true, "result":{...}}   là thành công )
 
-8) sudo docker compose down && docker compose up --build
+4) sudo docker compose down && docker compose up --build
 
 🧹 Dọn dẹp hệ thống (Reset)
 Để tắt hệ thống và xóa sạch danh sách IP đã bị chặn (chuẩn bị cho lần test tiếp theo), hãy chạy 2 lệnh sau:
@@ -203,8 +177,63 @@ sudo sh -c 'echo -n > shared_config/block_ips.conf'
 ```
 
 ## 📸 Hình ảnh Demo
+<img width="1919" height="1041" alt="image" src="https://github.com/user-attachments/assets/6c0a336c-4c77-4de6-bd4a-a274dd401c18" />
+
+
 <img width="1613" height="545" alt="START" src="https://github.com/user-attachments/assets/0e488fc5-a659-4858-beb8-9cb1a7c6395b" />
 
-<img width="1323" height="640" alt="gui request" src="https://github.com/user-attachments/assets/cb69633a-4412-4ab3-b54f-90b54717b179" />
+<img width="1323" height="640" alt="gui request" src="https://github.com/user-attachments/assets/cb69633a-4412-4ab3-b54f-90b54717b179" >
 
-<img width="1600" height="861" alt="1" src="https://github.com/user-attachments/assets/17428dc2-b4c3-44ed-ba1e-0e46b004838b" />
+<img width="1919" height="1044" alt="image" src="https://github.com/user-attachments/assets/e2af69b3-ca7a-4aae-9068-e9c1274b906c" />
+
+<img width="830" height="156" alt="image" src="https://github.com/user-attachments/assets/0a04adea-36f7-4349-bab3-1a425a4e803b" />
+
+
+
+## 🎯 BÀI KIỂM TRA TOÀN DIỆN: "THỬ LỬA" HỆ THỐNG SOC 🚀
+
+Bây giờ hệ thống của bạn đã được trang bị đầy đủ: **n8n** (Core xử lý), **NPort** (Đường hầm Internet) và **Nginx** (Lá chắn Reverse Proxy). Hãy cùng chạy kịch bản test thực tế dưới đây để thấy sự kỳ diệu của tự động hóa nhé!
+
+## 🟢 Kịch bản 1: Giám sát chủ động (Ping Health Check)
+Thay vì ngồi chờ lỗi xảy ra, SOC xịn là phải biết tự đi "khám bệnh" hệ thống. Chúng ta sẽ dùng Bot Telegram để hỏi thăm sức khỏe của máy chủ Nginx.
+**Trước khi tiến hành kiểm thử, bạn cần đảm bảo môi trường Nginx "sạch" và n8n có thể kết nối thuận lợi. Hãy thực hiện các bước chuẩn bị sau:**
+
+sudo sh -c 'echo -n > shared_config/block_ips.conf'
+
+Mặc định Nginx sẽ báo lỗi 403 nếu thư mục web trống. Hãy tạo một file mặc định để khi n8n kiểm tra (Health check), Nginx sẽ trả về mã 200 OK (xác nhận hệ thống khỏe mạnh):
+
+echo "He thong phong thu dang hoat dong!" > ~/He-Thong-Giam-Sat-SOC-n8n/brute-force-defender/nginx-server/html/index.html
+sudo docker ps ( kiểm tra dịch vụ nginx)
+sudo docker restart demo_nginx_server (khởi động lại dịch vụ nginx)
+
+Thực hiện: Cầm điện thoại lên, mở đoạn chat với Bot Telegram của bạn và gõ lệnh:
+/healthy
+
+Kết quả: Lúc này, n8n sẽ tự động chạy luồng Monitor, "chạy ù" ra kiểm tra Nginx. Vì Nginx của chúng ta đang hoạt động cực kỳ mượt mà, n8n sẽ trả về cho bạn một tin nhắn an tâm:
+🟢: HEALTHY Trạng thái OK! Hệ thống Nginx đang chạy mượt mà
+<img width="1552" height="176" alt="image" src="https://github.com/user-attachments/assets/1edd85a8-62a4-48a4-bcd9-22da3a471c11" />
+
+<img width="1919" height="1042" alt="image" src="https://github.com/user-attachments/assets/ec11645b-8ec2-48c7-b795-92486e088a0a" />
+
+
+## 🔴 Kịch bản 2: "Rút phích cắm" - Giả lập Server Sập (Server Down)
+Bài test để xem độ nhạy bén của hệ thống khi có biến cố mạng, chúng ta sẽ tự tay tắt con server Nginx.
+Rút phích cắm Nginx: Mở MobaXterm và gõ lệnh tắt server Nginx đột ngột:
+
+Bash
+sudo docker stop demo_nginx_server
+
+Kiểm tra phản ứng: Cầm điện thoại lên và gõ lại lệnh /healthy.
+Kết quả: Ngay lập tức, n8n không tìm thấy Nginx. Nó sẽ rẽ nhánh luồng dữ liệu sang trạng thái Error và hú còi báo động:
+🔴: BÁO ĐỘNG KHẨN Nginx không phản hồi (Mất kết nối)!
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/b3a89368-6522-41e8-9ee3-c5bc3cb095ea" />
+
+
+Cứu sống lại (Hồi sinh): 
+
+Bash
+sudo docker start demo_nginx_server
+
+Gõ lại /healthy trên Telegram, bạn sẽ thấy nó xanh 🟢 trở lại. 
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/0c0a3be7-96a9-4d4e-85c3-19a37107047a" />
+
