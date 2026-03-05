@@ -58,7 +58,7 @@ newgrp docker
 4) Tải toàn bộ mã nguồn hệ thống về máy
 git clone https://github.com/Dungsocool/He-Thong-Giam-Sat-SOC-n8n
 5) cd He-Thong-Giam-Sat-SOC-n8n/n8n-monitoring
-6)curl -fsSL [https://deb.nodesource.com/setup_20.x](https://deb.nodesource.com/setup_20.x) | sudo -E bash -
+6)curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
 sudo npm install -g nport
 7) Mở 1 Terminal chạy song song
