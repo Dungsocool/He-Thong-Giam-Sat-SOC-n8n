@@ -1,188 +1,202 @@
-# 🛡️ Telegram SOC Command Center: Hệ Thống Giám Sát n8n & Phòng Thủ Brute-Force
+# 🛡️ Telegram SOC Command Center: n8n Monitoring & Brute-Force Defense System
 
-Một hệ thống lab giả lập bằng Docker chuyên dụng, biến **Telegram thành Trung tâm Điều hành An ninh mạng (SOC)**. Hệ thống kết hợp giữa phòng thủ chủ động bằng Python và tự động hóa cảnh báo bằng n8n, giúp quản trị viên giám sát Uptime trực tiếp từ điện thoại từ đó chặn đứng các cuộc tấn công Brute-Force .
+A dedicated Docker-based simulation lab that turns **Telegram into a Cyber Security Operations Center (SOC)**. The system combines proactive defense using Python with alerting automation using n8n, enabling administrators to monitor Uptime directly from their phone and completely shut down Brute-Force attacks.
 
 # 📸 Video
 
 https://drive.google.com/file/d/1AKJ5XQbnb54aVJU6TYBKPSRw9uGVZF_D/view?usp=sharing
 
-## 💡 Giới thiệu Hệ Sinh Thái
+## 💡 Ecosystem Introduction
 
-Hệ thống được nâng cấp toàn diện với 2 luồng hoạt động chính, bổ trợ chặt chẽ cho nhau:
-1. **🟢 Luồng Giám Sát Sức Khỏe (Uptime Monitoring bằng n8n):** Quản trị viên chủ động gõ lệnh `/healthy` trên Telegram. n8n sẽ đi "khám bệnh" server Nginx và báo cáo trạng thái (Sống/Chết) ngay lập tức. Khi thụ động nhận cảnh báo lập tức sẽ báo cho Quản trị viên .
-2. **🔴 Luồng Phòng Thủ & Báo Động (Security IDS/IPS):** Script Python (`watcher.py`) liên tục quét log Nginx. Khi phát hiện IP có dấu hiệu quét lỗi 403 vượt ngưỡng, nó tự động khóa IP ở tầng Nginx, đồng thời kích hoạt Webhook của n8n để bắn **còi báo động khẩn cấp** về Telegram.
+The system is comprehensively upgraded with 2 core, mutually supporting workflows:
+1. **🟢 Health Monitoring Workflow (Uptime Monitoring via n8n):** The administrator actively types the `/healthy` command on Telegram. n8n will perform a health check on the Nginx server and report its status (Up/Down) immediately. It will also immediately notify the Administrator when passively receiving alerts.
+2. **🔴 Defense & Alerting Workflow (Security IDS/IPS):** A Python script (`watcher.py`) continuously scans Nginx logs. When it detects an IP demonstrating a pattern of exceeding the 403 error threshold, it automatically blocks the IP at the Nginx layer, while simultaneously triggering the n8n Webhook to fire an **emergency alarm** to Telegram.
 
-## 📂 Cấu trúc dự án
+## 📂 Project Structure
 
-Dự án được quy hoạch chuẩn Microservices với 2 thư mục cốt lõi:
+The project is structured following standard Microservices design with 2 core directories:
 
 ```text
 He-Thong-Giam-Sat-SOC-n8n/
 ├── README.md
-├── brute-force-defender/           # Hệ thống phòng thủ cốt lõi
+├── brute-force-defender/           # Core defense system
 │   ├── docker-compose.yml
-│   ├── .env.example                # File mẫu cấu hình Token Telegram
-│   ├── nginx-server/               # Web Server mục tiêu (Honeypot)
-│   ├── security-watcher/           # Script Python phân tích log & gọi Webhook
-│   └── attacker-bot/               # Script giả lập hacker (attack.sh)
-└── n8n-monitoring/                 # Bộ não tự động hóa
-    ├── n8n-health-check.json       # Sơ đồ n8n: Xử lý lệnh /healthy
-    └── n8n-webhook-alert.json      # Sơ đồ n8n: Nhận báo động từ Python
+│   ├── .env.example                # Configuration template for Telegram Token
+│   ├── nginx-server/               # Target Web Server (Honeypot)
+│   ├── security-watcher/           # Python script to analyze logs & trigger Webhooks
+│   └── attacker-bot/               # Script to simulate attackers (attack.sh)
+└── n8n-monitoring/                 # Automation brain
+    ├── n8n-health-check.json       # n8n diagram: Processing /healthy command
+    └── n8n-webhook-alert.json      # n8n diagram: Receiving alerts from Python
 ```
 
 
-## 🤖 PHẦN 1: HỆ THỐNG GIÁM SÁT & CẢNH BÁO (n8n Monitoring)
+## 🤖 PART 1: AUTOMATION & ALERT SYSTEM (n8n Monitoring)
 
-### 💡 Giới thiệu
-Đây là "Bộ não" trung tâm của hệ thống, sử dụng nền tảng tự động hóa n8n để liên kết máy chủ với Telegram của Quản trị viên. Nó hoạt động với 2 nhiệm vụ song song: kiểm tra sức khỏe máy chủ chủ động và nhận báo động thụ động , lập tức báo cho Quản trị viên .
+### 💡 Introduction
+This is the central "Brain" of the system, leveraging the n8n automation platform to link the server with the Administrator's Telegram. It functions with two parallel tasks: active server health checks and passive alert reception, immediately notifying the Administrator.
 
-### ⚙️ Kiến trúc & Luồng hoạt động (Workflow)
-1. **Luồng Giám Sát (Active Health Check):**
-   - Quản trị viên gõ lệnh `/healthy` vào bot Telegram.
-   - n8n nhận lệnh ➡️ Kích hoạt Node HTTP Request để "ping" tới trang chủ Nginx.
-   - Trả về tin nhắn **Xanh 🟢** nếu server ổn định, hoặc **Đỏ 🔴** nếu Nginx sập (mất kết nối).
-2. **Luồng Báo Động (Passive Alert):**
-   - Lắng nghe Webhook 24/7 chờ tín hiệu từ hệ thống phòng thủ.
-   - Ngay khi nhận được dữ liệu (POST request) báo cáo có IP bị khóa, n8n lập tức bắn tin nhắn 🚨 **BÁO ĐỘNG KHẨN** về Telegram.
+### ⚙️ Architecture & Workflow
+1. **Active Health Check Workflow:**
+   - The administrator types the `/healthy` command in the Telegram bot.
+   - n8n receives the command ➡️ Triggers the HTTP Request Node to "ping" the Nginx homepage.
+   - Returns a green message **🟢** if the server is stable, or a red message **🔴** if Nginx is down (connection lost).
+2. **Passive Alert Workflow:**
+   - Listens to the Webhook 24/7 waiting for signals from the defense system.
+   - The moment data (POST request) reporting a blocked IP is received, n8n immediately fires an 🚨 **URGENT ALARM** message to Telegram.
 
-### 🚀 Hướng dẫn Cài đặt & Sử dụng (n8n)
+### 🚀 Installation & Usage Guide (n8n)
 
 ```bash
-1) Cập nhật hệ thống và cài đặt Git, Curl
+# 1) Update the system and install Git, Curl
 sudo apt-get update && sudo apt-get install -y git curl
-2) Cài đặt Docker & Docker Compose tự động bằng Official Script
+
+# 2) Automatically install Docker & Docker Compose using the Official Script
 curl -fsSL https://get.docker.com | sudo sh
-3) Phân quyền để chạy Docker không cần gõ sudo liên tục
+
+# 3) Grant permissions to run Docker without typing sudo repeatedly
 sudo usermod -aG docker $USER
 newgrp docker
-4) Tải toàn bộ mã nguồn hệ thống về máy
+
+# 4) Clone the repository
 git clone https://github.com/Dungsocool/He-Thong-Giam-Sat-SOC-n8n
-5) cd He-Thong-Giam-Sat-SOC-n8n/n8n-monitoring
-6)curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+cd He-Thong-Giam-Sat-SOC-n8n/n8n-monitoring
+
+# 5) Install NodeJS and nport
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
 sudo npm install -g nport
-7) Mở 1 Terminal chạy song song
-sudo nport 5678 -s soc-n8n-cua-ban
-8)
+
+# 6) Open a parallel Terminal and run
+sudo nport 5678 -s your-soc-n8n
+
+# 7) Start n8n container
 sudo docker compose up -d
-9) Sau bước 7, 8 đăng nhập vào giao diện Web n8n
-(bạn có thể sửa tên đăng nhập trong /He-Thong-Giam-Sat-SOC-n8n/n8n-monitoring/docker-compose.yml )
-https://soc-n8n-cua-ban.nport.link
-10) Import "Bản thiết kế" (File JSON)
-Thay vì phải kéo thả, tự vẽ lại luồng từ đầu, bạn chỉ cần nạp cấu hình đã được làm sẵn:
-Tải .json nằm trong thư mục n8n-monitoring của kho GitHub này về máy tính.
-Trên giao diện web n8n, nhìn sang menu bên trái, chọn Workflows ➡️ Bấm Add Workflow.
-Nhìn lên góc trên cùng, bấm vào nút Menu (biểu tượng 3 dấu gạch ngang) ➡️ Chọn Import from File và tải lên lần lượt  file JSON đó.
 
-11) Cấu hình định danh Bot Telegram
-Để Bot biết phải gửi tin nhắn cho ai, bạn cần cấu hình lại 2 thông số sau trong các luồng vừa tải lên:
-Click đúp vào các cục Node có tên Telegram.
-Credential: Tạo mới kết nối và dán mã TELEGRAM_TOKEN của con Bot bạn đang quản lý vào.
-Chat ID: Xóa dòng chữ DIEN_CHAT_ID và điền dãy số ID Telegram thật của bạn vào. ➡️ Bấm Save.
+# 8) Log in to the n8n Web interface
+# (You can modify the username in /He-Thong-Giam-Sat-SOC-n8n/n8n-monitoring/docker-compose.yml)
+# Visit: https://your-soc-n8n.nport.link
 
-12) Kích hoạt & Lấy link Webhook
-Gạt công tắc ở góc phải trên cùng của màn hình n8n sang trạng thái Active (công tắc chuyển màu xanh lá) cho cả 2 luồng.
-Mở Node Webhook (trong luồng báo động), click đúp vào nó, chuyển sang tab Production URL.
+# 9) Import "Blueprints" (JSON Files)
+# Instead of dragging, dropping, and drawing the workflow from scratch, you can simply load the pre-built configuration:
+# Download the .json files located in the n8n-monitoring directory of this GitHub repo to your computer.
+# On the n8n web interface, go to the left menu, select Workflows ➡️ Click Add Workflow.
+# Look at the top right corner, click on the Menu button (3 horizontal lines icon) ➡️ Select Import from File and upload those JSON files one by one.
 
+# 10) Configure Telegram Bot Credentials
+# For the Bot to know who to send messages to, you need to configure 2 parameters in the imported workflows:
+# Double click on the Nodes named Telegram.
+# Credential: Create a new connection and paste your Bot's TELEGRAM_TOKEN.
+# Chat ID: Delete the placeholder text and enter your real Telegram Chat ID. ➡️ Click Save.
+
+# 11) Activate & Obtain Webhook Link
+# Toggle the switch in the top right corner of the n8n screen to Active (switch turns green) for both workflows.
+# Open the Webhook Node (in the alert workflow), double click it, and switch to the Production URL tab.
 ```
-## 📸 Hình ảnh Demo
+
+## 📸 Demo Images
 <img width="1919" height="817" alt="image" src="https://github.com/user-attachments/assets/a2b96f34-dce8-451f-b404-dc3411669e44" />
 <img width="1625" height="228" alt="image" src="https://github.com/user-attachments/assets/b68dd3c2-1311-44c6-bca7-d26e84ab3978" />
 <img width="1844" height="987" alt="image" src="https://github.com/user-attachments/assets/bcf86de0-3f2e-4835-929a-2daf2568aeb4" />
 
 <img width="1915" height="1079" alt="image" src="https://github.com/user-attachments/assets/db28a2c0-3329-4c3e-9374-7ec2f017cde4" />
 
-# 🎯 Kiểm tra hoạt động của hệ thống (Testing)
+# 🎯 Testing the System
 
-Sau khi hệ thống n8n đã lên sóng với đường link NPort xịn sò, giờ là lúc chúng ta "thử lửa" xem luồng cảnh báo có thực sự chạy mượt mà không nhé!
+After the n8n system is live with your NPort link, it's time to "test fire" and see if the alert workflow runs smoothly!
 
-
-**🚀 Bài Test 1: Bắn cảnh báo giả lập bằng curl** 
-curl -X POST <> 
+**🚀 Test 1: Simulating an Alert Using curl**
+```bash
+curl -X POST <YOUR_PRODUCTION_URL>
+```
 <img width="1912" height="924" alt="image" src="https://github.com/user-attachments/assets/7aa66c1f-bedf-43f6-86e2-7288c2854687" />
-Thay  <> bằng Production URL của bạn .
-🎉 Ngay lập tức, điện thoại của bạn sẽ rung lên với tin nhắn cảnh báo. Nếu bạn nhận được tin nhắn, xin chúc mừng, hệ thống Core của bạn đã hoạt động hoàn hảo!
+*Replace `<YOUR_PRODUCTION_URL>` with your actual Production URL.*
+
+🎉 Immediately, your phone will vibrate with an alert message. If you receive the message, congratulations, your Core system is working perfectly!
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/41ebb722-37d0-41aa-808b-4e95d97be8f5" />
 
+**🚧 Test 2: Typing `/healthy` to Check Nginx (Awaiting Part 2 to Complete)**
+In the Monitor Workflow you just imported, there is a very cool feature: whenever you open Telegram and type `/healthy`, n8n will check if the Nginx server is alive.
 
-
-**🚧 Bài Test 2: Gõ lệnh /healthy kiểm tra Nginx (Chờ Phần 2 để hoàn thiện)**
-Trong luồng giám sát (Monitor Workflow) bạn vừa import, có một tính năng rất ngầu: Hễ bạn mở Telegram gõ lệnh /healthy, n8n sẽ đi kiểm tra xem máy chủ Nginx có đang sống không.
-
-Thử ngay bây giờ bạn sẽ thấy gì?
-Vì ở Phần 1 này chúng ta chưa hề cài đặt Nginx, nên n8n sẽ không tìm thấy server. Nó sẽ lập tức rẽ sang nhánh Lỗi và bắn cho bạn một tin nhắn Màu Đỏ 🔴:
-🔴 BÁO ĐỘNG KHẨN Nginx không phản hồi (Mất kết nối)!
+What will you see if you try it right now?
+Since we haven't installed Nginx in Part 1 yet, n8n won't find the server. It will immediately take the Error branch and send you a Red message 🔴:
+`🔴 URGENT ALARM: Nginx is not responding (Connection Lost)!`
 <img width="887" height="886" alt="image" src="https://github.com/user-attachments/assets/72c16c28-cab0-4e96-b738-6a114f6c7a74" />
-👉 Đừng lo lắng, đây là một bài test THÀNH CÔNG! Nó chứng tỏ nhánh báo lỗi của n8n hoạt động cực kỳ nhạy bén.
-Làm sao để có tin nhắn Màu Xanh 🟢?
-Để hệ thống hoàn chỉnh và gõ /healthy trả về trạng thái bình thường (Server đang chạy tốt), chúng ta cần thiết lập Reverse Proxy.
-⏩ Hẹn gặp lại các bạn ở Phần 2: Cài đặt Nginx & Tối ưu luồng SOC nhé!
-## 🛡️ PHẦN 2: HỆ THỐNG PHÒNG THỦ (Brute-Force Defender)
+👉 Don't worry, this is a SUCCESSFUL test! It proves that n8n's error reporting branch is extremely sensitive.
 
-## 💡 Giới thiệu
+How to get a Green message 🟢?
+To make the system complete and have `/healthy` return a normal status (Server running well), we need to set up a Reverse Proxy.
+⏩ See you in Part 2: Installing Nginx & Optimizing the SOC Workflow!
 
-Hệ thống được thiết kế tối giản với 3 thành phần cốt lõi:
-* **Nginx Server (Mục tiêu):** Web Server chạy honeypot, ghi nhận mọi truy cập rác vào file log.
-* **Attacker Bot (Kẻ tấn công):** Script tự động liên tục "bắn" request lỗi vào server để giả lập tấn công.
-* **Security Watcher (Phòng thủ & Cảnh báo):** Trái tim của hệ thống. Script Python quét log Nginx liên tục (real-time). Khi phát hiện IP có dấu hiệu tấn công, nó sẽ tự động khóa IP đó và **đặc biệt: bắn ngay một cảnh báo chi tiết về điện thoại của bạn qua Telegram**.
+---
 
-## ⚙️ Kiến trúc & Luồng hoạt động (Workflow)
+## 🛡️ PART 2: DEFENSE SYSTEM (Brute-Force Defender)
 
-1. **Ghi Log:** Attacker Bot gửi request -> Nginx Server trả lỗi 403/404 và ghi trực tiếp vào `access.log`.
-2. **Đọc Log:** Security Watcher sử dụng kỹ thuật "tail -f" để quét file log theo thời gian thực.
-3. **Block IP:** Nếu phát hiện 1 IP vi phạm vượt ngưỡng (ví dụ: 10 lỗi/phút), Watcher tự động ghi IP đó vào danh sách đen (`block_ips.conf`) và ép Nginx reload để cắt đứt kết nối.
-4. **Báo động (Telegram):** Ngay khoảnh khắc IP bị block, Watcher sẽ gọi API để gửi tin nhắn thông báo khẩn cấp đến Telegram của quản trị viên.
+## 💡 Introduction
 
-## 📂 Cấu trúc dự án
+The system is designed to be minimalist with 3 core components:
+* **Nginx Server (Target):** Web Server running a honeypot, logging all junk traffic to the access log.
+* **Attacker Bot (Attacker):** An automated script continuously "firing" failing requests at the server to simulate an attack.
+* **Security Watcher (Defense & Alerting):** The heart of the system. A Python script that scans Nginx logs continuously in real-time. When it detects an IP showing signs of an attack, it automatically blocks that IP and, **most importantly: instantly fires a detailed alert to your phone via Telegram**.
+
+## ⚙️ Architecture & Workflow
+
+1. **Log Recording:** The Attacker Bot sends requests -> The Nginx Server returns a 403/404 error and logs directly into `access.log`.
+2. **Log Reading:** The Security Watcher uses the "tail -f" technique to scan log files in real-time.
+3. **Block IP:** If an IP is found violating a threshold (e.g., 10 errors/minute), the Watcher automatically writes that IP to a blacklist (`block_ips.conf`) and forces Nginx to reload to cut off the connection.
+4. **Alert (Telegram):** The exact moment an IP is blocked, the Watcher calls the API to send an emergency notification to the administrator's Telegram.
+
+## 📂 Project Structure
 
 ```text
 phongthu/
 ├── docker-compose.yml
 ├── README.md
-├── .env                            # Lưu TELEGRAM_TOKEN và TELEGRAM_CHAT_ID
+├── .env                            # Saves TELEGRAM_TOKEN and TELEGRAM_CHAT_ID
 ├── nginx-server/
 │   ├── Dockerfile
 │   └── nginx.conf
 ├── security-watcher/
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   └── watcher.py                  # Script phân tích log & gửi Telegram
+│   └── watcher.py                  # Script for log analysis & Telegram alerting
 ├── attacker-bot/
 │   ├── Dockerfile
 │   └── attack.sh
-├── shared_logs/                    # Chứa access.log của Nginx
+├── shared_logs/                    # Contains Nginx's access.log
 └── shared_config/
-    └── block_ips.conf              # Danh sách IP bị chặn (ACL)
-
+    └── block_ips.conf              # Blocked IP list (ACL)
 ```
 
-## 🚀 Hướng dẫn Cài đặt & Sử dụng
+## 🚀 Installation & Usage Guide
 
-Để chạy được hệ thống, máy ảo của bạn cần có Git và Docker. Thay vì cài đặt thủ công phức tạp, hãy chạy lần lượt các lệnh tự động sau:
+To run the system, your virtual machine needs to have Git and Docker installed. Instead of complex manual setups, run the following automated commands in sequence:
 
 ```bash
+# 1) Navigate to the defender directory
+cd  ~/He-Thong-Giam-Sat-SOC-n8n/brute-force-defender
 
-1) cd  ~/He-Thong-Giam-Sat-SOC-n8n/brute-force-defender
+# 2) Edit env file
+sudo nano .env  # (Note: Enter your TELEGRAM_TOKEN and TELEGRAM_CHAT_ID here)
 
-2) sudo nano .env  # (Ghi chú: Điền TELEGRAM_TOKEN và TELEGRAM_CHAT_ID của bạn vào đây)
+# 3) Test Telegram connection
+curl -s "https://api.telegram.org/bot<YOUR_TOKEN>/sendMessage?chat_id=<YOUR_ID>&text=Test_connection_successful!"
+# (Telegram "Ping" test: {"ok":true, "result":{...}} means successful)
 
-3) curl -s "https://api.telegram.org/bot<TOKEN_CUA_BAN>/sendMessage?chat_id=<ID_CUA_BAN>&text=Test_ket_noi_thanh_cong!"
-        ( "Ping" thử Telegram    {"ok":true, "result":{...}}   là thành công )
-
-4) sudo docker compose down && docker compose up --build
-
-🧹 Dọn dẹp hệ thống (Reset)
-Để tắt hệ thống và xóa sạch danh sách IP đã bị chặn (chuẩn bị cho lần test tiếp theo), hãy chạy 2 lệnh sau:
-
-sudo docker-compose down
-
-sudo sh -c 'echo -n > shared_config/block_ips.conf'
-
+# 4) Start the environment
+sudo docker compose down && docker compose up --build
 ```
 
-## 📸 Hình ảnh Demo
-<img width="1919" height="1041" alt="image" src="https://github.com/user-attachments/assets/6c0a336c-4c77-4de6-bd4a-a274dd401c18" />
+### 🧹 System Cleanup (Reset)
+To shut down the system and clear all blocked IP lists (preparing for the next test run), execute these 2 commands:
 
+```bash
+sudo docker-compose down
+sudo sh -c 'echo -n > shared_config/block_ips.conf'
+```
+
+## 📸 Demo Images
+<img width="1919" height="1041" alt="image" src="https://github.com/user-attachments/assets/6c0a336c-4c77-4de6-bd4a-a274dd401c18" />
 
 <img width="1613" height="545" alt="START" src="https://github.com/user-attachments/assets/0e488fc5-a659-4858-beb8-9cb1a7c6395b" />
 
@@ -192,52 +206,59 @@ sudo sh -c 'echo -n > shared_config/block_ips.conf'
 
 <img width="830" height="156" alt="image" src="https://github.com/user-attachments/assets/0a04adea-36f7-4349-bab3-1a425a4e803b" />
 
+---
 
+## 🎯 COMPREHENSIVE TEST: "TEST FIRING" THE SOC SYSTEM 🚀
 
-## 🎯 BÀI KIỂM TRA TOÀN DIỆN: "THỬ LỬA" HỆ THỐNG SOC 🚀
+Now your system is fully equipped: **n8n** (Core processor), **NPort** (Internet tunnel), and **Nginx** (Reverse Proxy shield). Let's run a real-world test scenario to see the magic of automation!
 
-Bây giờ hệ thống của bạn đã được trang bị đầy đủ: **n8n** (Core xử lý), **NPort** (Đường hầm Internet) và **Nginx** (Lá chắn Reverse Proxy). Hãy cùng chạy kịch bản test thực tế dưới đây để thấy sự kỳ diệu của tự động hóa nhé!
+## 🟢 Scenario 1: Proactive Monitoring (Ping Health Check)
+Instead of waiting for errors to occur, a great SOC actively "diagnoses" the system's health. We will use the Telegram Bot to check the status of the Nginx server.
 
-## 🟢 Kịch bản 1: Giám sát chủ động (Ping Health Check)
-Thay vì ngồi chờ lỗi xảy ra, SOC xịn là phải biết tự đi "khám bệnh" hệ thống. Chúng ta sẽ dùng Bot Telegram để hỏi thăm sức khỏe của máy chủ Nginx.
-**Trước khi tiến hành kiểm thử, bạn cần đảm bảo môi trường Nginx "sạch" và n8n có thể kết nối thuận lợi. Hãy thực hiện các bước chuẩn bị sau:**
+**Before testing, make sure your Nginx environment is "clean" and n8n can connect easily. Complete the following preparation steps:**
 
+```bash
 sudo sh -c 'echo -n > shared_config/block_ips.conf'
+```
 
-Mặc định Nginx sẽ báo lỗi 403 nếu thư mục web trống. Hãy tạo một file mặc định để khi n8n kiểm tra (Health check), Nginx sẽ trả về mã 200 OK (xác nhận hệ thống khỏe mạnh):
+By default, Nginx returns a 403 error if the web directory is empty. Let's create a default file so that when n8n performs its health check, Nginx returns a `200 OK` status (confirming system health):
 
+```bash
 echo "He thong phong thu dang hoat dong!" > ~/He-Thong-Giam-Sat-SOC-n8n/brute-force-defender/nginx-server/html/index.html
-sudo docker ps ( kiểm tra dịch vụ nginx)
-sudo docker restart demo_nginx_server (khởi động lại dịch vụ nginx)
+sudo docker ps # (Check Nginx service status)
+sudo docker restart demo_nginx_server # (Restart Nginx service)
+```
 
-Thực hiện: Cầm điện thoại lên, mở đoạn chat với Bot Telegram của bạn và gõ lệnh:
-/healthy
+**Execution:** Pick up your phone, open your chat with the Telegram Bot, and type the command:
+`/healthy`
 
-Kết quả: Lúc này, n8n sẽ tự động chạy luồng Monitor, "chạy ù" ra kiểm tra Nginx. Vì Nginx của chúng ta đang hoạt động cực kỳ mượt mà, n8n sẽ trả về cho bạn một tin nhắn an tâm:
-🟢: HEALTHY Trạng thái OK! Hệ thống Nginx đang chạy mượt mà
+**Result:** At this point, n8n automatically runs the Monitor workflow, immediately checking Nginx. Since Nginx is running extremely smoothly, n8n returns a reassuring message:
+`🟢: HEALTHY Status OK! Nginx system is running smoothly`
+
 <img width="1552" height="176" alt="image" src="https://github.com/user-attachments/assets/1edd85a8-62a4-48a4-bcd9-22da3a471c11" />
-
 <img width="1919" height="1042" alt="image" src="https://github.com/user-attachments/assets/ec11645b-8ec2-48c7-b795-92486e088a0a" />
 
+---
 
-## 🔴 Kịch bản 2: "Rút phích cắm" - Giả lập Server Sập (Server Down)
-Bài test để xem độ nhạy bén của hệ thống khi có biến cố mạng, chúng ta sẽ tự tay tắt con server Nginx.
-Rút phích cắm Nginx: Mở MobaXterm và gõ lệnh tắt server Nginx đột ngột:
+## 🔴 Scenario 2: "Pulling the Plug" - Simulating Server Outage (Server Down)
+To test the responsiveness of the system during a network incident, we will manually stop the Nginx server.
 
-Bash
+**Pulling the Plug on Nginx:** Open MobaXterm and run the command to abruptly stop the Nginx server:
+```bash
 sudo docker stop demo_nginx_server
+```
 
-Kiểm tra phản ứng: Cầm điện thoại lên và gõ lại lệnh /healthy.
-Kết quả: Ngay lập tức, n8n không tìm thấy Nginx. Nó sẽ rẽ nhánh luồng dữ liệu sang trạng thái Error và hú còi báo động:
-🔴: BÁO ĐỘNG KHẨN Nginx không phản hồi (Mất kết nối)!
+**Check Response:** Pick up your phone and type the command `/healthy` again.
+
+**Result:** Immediately, n8n cannot find Nginx. It redirects the workflow path to the Error state and sounds the alarm:
+`🔴: URGENT ALARM: Nginx is not responding (Connection Lost)!`
+
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/b3a89368-6522-41e8-9ee3-c5bc3cb095ea" />
 
-
-Cứu sống lại (Hồi sinh): 
-
-Bash
+**Reviving the Server:**
+```bash
 sudo docker start demo_nginx_server
+```
 
-Gõ lại /healthy trên Telegram, bạn sẽ thấy nó xanh 🟢 trở lại. 
+Type `/healthy` on Telegram again, and you'll see it turn green 🟢 once more.
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/0c0a3be7-96a9-4d4e-85c3-19a37107047a" />
-
